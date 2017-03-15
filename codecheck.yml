@@ -1,0 +1,2 @@
+env:
+  APP_COMMAND: java -jar server.jar
