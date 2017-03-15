@@ -1,0 +1,8 @@
+
+.l_star .true{
+    background: url('../static/img/star.gif');
+}
+
+.l_star .false{
+    background: url('../static/img/nonstar.gif');
+}

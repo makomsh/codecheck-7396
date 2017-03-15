@@ -7,7 +7,16 @@
 	<body>
 		<script type="text/javascript" src="static/jquery-3.1.1.min.js"></script>
 		<script type="text/javascript" src="static/index.js"></script>
-		<button id="test">test</button>
+		<form>
+			<input type="text" id="todo" value="タイトル記入">
+			<input type="checkbox" id="star">重要
+			<input type="checkbox" id="done" >完了
+			<input type="date" id="deadline">締切日
+			<button id="test">add</button>
+		</form>
+		<h1>TO DO LIST</h1>
+		<p>一覧</p>
+		<button id="changeLists" data-done="false">完了したタスクを表示する</button>
 		<div id="board">
 			<!--  ここにTODOLISTをはりつけてく -->
 		</div>
