@@ -2,23 +2,37 @@
 	<head>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="static/index.css">
-		<title></title>
+		<title>TO DO LIST</title>
 	</head>
 	<body>
 		<script type="text/javascript" src="static/jquery-3.1.1.min.js"></script>
 		<script type="text/javascript" src="static/index.js"></script>
+
+
+		<h1>TO DO LIST</h1>
+
 		<form>
 			<input type="text" id="todo" value="タイトル記入">
 			<input type="checkbox" id="star">重要
 			<input type="checkbox" id="done" >完了
 			<input type="date" id="deadline">締切日
-			<button id="test">add</button>
+			<button id="create">create</button>
 		</form>
-		<h1>TO DO LIST</h1>
+
 		<p>一覧</p>
-		<button id="changeLists" data-done="false">完了したタスクを表示する</button>
+		<ul id="changeLists">表示切替
+			<li value="all" id="all">すべて</li>
+			<ul value="sord_d">未完・完了
+				<li value="sort_non" id="sort_non">未完</li>
+				<li value="sort_done" id="sort_done">完了</li>
+			</ul>
+			<li value="sort_star" id="sort_star">重要</li>
+			<li value="sort_deadline" id="sort_deadline">締め切り</li>
+
+		</ul>
+
 		<div id="board">
-			<!--  ここにTODOLISTをはりつけてく -->
+			<!--  ここにTO DO LISTをはりつけてく -->
 		</div>
 
 
