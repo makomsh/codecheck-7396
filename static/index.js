@@ -1,11 +1,14 @@
-/**
+/*
  * Created by miyashita_ak on 17/01/20.
  */
+
+
 var Page = function(){
 
     //初期化
     this.init = function(){
         setList(false);
+        $('#createNew').hide();
     };
 
 };
@@ -17,8 +20,10 @@ var p = new Page();
 var array =[];
 $(function(){
     p.init();
-
+    $( "#sortable" ).sortable();
+    $( "#sortable" ).disableSelection();
 });
+
 
 function setList( doneMode ) {
     console.log(doneMode);
@@ -27,11 +32,9 @@ function setList( doneMode ) {
         url: '../api/1/todo/',
         success: function (json) {
             // 成功時の処理;
-            $('#board').empty();
             array = [];
             if (json.length != null) {
                 for (var i = 0; i < json.length; i++) {
-                    var mess="";
                     if(doneMode === "all") {
                         array.push(json[i]);
                     }else if (doneMode) {
@@ -41,7 +44,6 @@ function setList( doneMode ) {
                     }else if(!json[i].done) {
                         array.push(json[i]);
                     }
-                    $('#board').append(mess);
                 }
             }
             displayList(array);
@@ -50,22 +52,71 @@ function setList( doneMode ) {
 }
 
 function displayList( arrayList ){
-    $('#board').empty();
+    $('#sortable').empty();
     for(var i = 0 ; i < arrayList.length; i++) {
-        var mess = "<p value='" + arrayList[i].id + "'>";
-        mess += "<input type='checkbox' class='l_done"+arrayList[i].done +"' onclick='clickDoneBtn(this)'>";
+        var mess = "<div class='panel panel-default task'>";
+        mess += " <div class='panel-body' value='"+ arrayList[i].id +"'>";
+        mess += "<input type='checkbox' class='task_done' onclick='clickDoneBtn(this)' ";
+        if (arrayList[i].done){
+            mess+= "checked";
+        }
+        mess += ">";
+        mess += "<a class='task_title'>";
         mess += arrayList[i].title;
-        mess += "<input type='checkbox' class='l_star " + arrayList[i].star +"' onclick='clickStarBtn(this)'>" ;
-        mess += "<a>"+ arrayList[i].time_limit+"</a></p>";
-        $('#board').append(mess);
+        mess += "</a>";
+        mess += "<span class='task_star glyphicon glyphicon-star";
+        if(!arrayList[i].star){
+            mess += "-empty";
+        }
+        mess += "'></span>";
+        mess += "<div class='t_time'>";
+        mess += "<span class='glyphicon'>&#xe023;</span>";
+        mess += "<span class='task_day'>";
+        mess += arrayList[i].time_limit;
+        mess += "</span>";
+ //       mess += "<span class='task_time_limit'>あと";
+ //       mess += new Date();
+ //       mess += "日</span>";
+        mess += "</div>";
+        mess += "<a class='btn btn_trash pull-right' onclick='clickDeleteBtn(this)'><span class='glyphicon glyphicon-trash'>Trash</span></a>";
+        mess += "<a class='btn btn_star pull-right' onclick='clickStarBtn(this)'><span class='glyphicon glyphicon-star";
+        if(arrayList[i].star){
+            mess += "-empty'>UnStar</span></a>";
+        }else{
+            mess += "'>Star</span></a>";
+        }
+        mess += "<a class='btn btn_done pull-right' onclick='clickDoneBtn(this)'><span class='glyphicon glyphicon-";
+        if(arrayList[i].done){
+            mess += "unchecked'>Open</span></a>";
+        } else {
+            mess += "ok'>Done</span></a>";
+        }
+        mess += "</div></div>";
+        $('#sortable').append(mess);
     }
+    $( "#sortable" ).sortable();
+    $( "#sortable" ).disableSelection();
 }
 
+$(document).on('click','#all',function() {
+    changeMode("all");
+    setList("all");
 
-$(document).on('click','#all',function() {setList("all")});
-$(document).on('click','#sort_non',function() {setList(false)});
-$(document).on('click','#sort_done',function() {setList(true)});
+});
+
+$(document).on('click','#sort_non',function() {
+    changeMode('nonDone');
+    setList(false);
+
+});
+
+$(document).on('click','#sort_done',function() {
+    changeMode('done');
+    setList(true);
+});
+
 $(document).on('click','#sort_star', function() {
+    changeMode("star");
     for(var i = 0 ; i < array.length; i++) {
         if(!array[i].star){
             array.splice( i, 1 ) ;
@@ -75,17 +126,30 @@ $(document).on('click','#sort_star', function() {
 });
 
 $(document).on('click','#sort_deadline', function() {
+    changeMode("time");
     //締め切り順にソートするプログラム実行
     array.sort(function(a,b){
         if(a.time_limit < b.time_limit) return -1;
         if(a.time_limit > b.time_limit) return 1;
         return 0;
     });
-    console.log(Object.keys(array));
     displayList(array);
 });
 
 
+function changeMode(mode) {
+
+    var before = $('#sort_mode').attr('mode');
+    $('#sort_mode').attr('mode', mode);
+
+}
+
+$(document).on('click','#createBtn',function() {
+    $('#createNew').show();
+});
+$(document).on('click','#cansel',function() {
+    $('#createNew').hide();
+});
 //create押下時
 $(document).on('click','#create', function() {
 
@@ -108,17 +172,16 @@ $(document).on('click','#create', function() {
                 "title": $('#todo').val()
             }),
         success: function (json) {
-            displayList(true);
+            setList(false);
+            displayList(array);
+            $('#createNew').hide();
         }
     });
 });
 
 
-
 function clickDoneBtn(obj) {
-    //　どのTODOなのかを特定するための関数を作成する必要があり、引数はValue（Id)
-    //  var list= array[$(obj).parent().attr("value")-1];
-    var list= array[0];
+    var list= array[searchList($(obj).parent().attr("value"))];
     $.ajax({
         type: 'PUT',
         url: '/api/1/todo/' + list.id,
@@ -140,10 +203,7 @@ function clickDoneBtn(obj) {
 }
 
 function clickStarBtn(obj){
-//    var list= array[$(obj).parent().attr("value")-1];
-//　どのTODOなのかを特定するための関数を作成する必要があり、引数はValue（Id)
-    var list= array[0];
-
+    var list= array[searchList($(obj).parent().attr("value"))];
     $.ajax({
         type: 'PUT',
         url: '/api/1/todo/' + list.id,
@@ -164,13 +224,34 @@ function clickStarBtn(obj){
     });
 }
 
-
+function clickDeleteBtn(obj){
+    var list= array[searchList($(obj).parent().attr("value"))];
+    $.ajax({
+        type: 'DELETE',
+        url: '/api/1/todo/' + list.id,
+        success: function (json) {
+            setList(false);
+        }
+    });
+}
 
 //どのTODOなのかを特定するための関数を作成する必要があり、引数はValue（Id)
 function searchList(value) {
     var result =null;
-    var num = 0;
-
-
-    return num;
+    for(var i = 0; i < array.length; i++){
+        //value とidが一緒かどうかを判断
+        if( value == array[i].id )
+            return i;//一緒なら配列の値を返す
+    }
+    alert('画面を読み込みなおしてください。');
+    //もしないような値があったら-1とかするべきかな？　errorはく的なしょりも必要
+    return -1;
 }
+
+
+function calTime(time){
+    //
+    var nowTime;
+
+}
+

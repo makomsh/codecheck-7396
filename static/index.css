@@ -1,8 +1,27 @@
 
-.l_star .true{
-    background: url('../static/img/star.gif');
+
+#todo_board {
+    margin-top:5%;
 }
 
-.l_star .false{
-    background: url('../static/img/nonstar.gif');
+#board {
+    margin-top:5%;
+}
+
+.task_bar p{
+    display: inline-block;  /* インラインブロック化 */
+    vertical-align: middle; /* 中央を揃える */
+}
+
+a.task_title {
+    font-size: 200%;
+    color: #000;
+}
+
+.task_time {
+    color: #0d87e9;
+    font-size: 90%;
+}
+.bookmark{
+    margin: auto;
 }
