@@ -7,8 +7,10 @@ var Page = function(){
 
     //初期化
     this.init = function(){
-        setList(false);
+ //       setList(false);
         $('#createNew').hide();
+        changeMode("sort_non");
+        display();
     };
 
 };
@@ -24,69 +26,66 @@ $(function(){
     $( "#sortable" ).disableSelection();
 });
 
-
-function setList( doneMode ) {
-    console.log(doneMode);
+function display() {
     $.ajax({
         type: 'GET',
         url: '../api/1/todo/',
         success: function (json) {
             // 成功時の処理;
-            array = [];
-            if (json.length != null) {
-                for (var i = 0; i < json.length; i++) {
-                    if(doneMode === "all") {
-                        array.push(json[i]);
-                    }else if (doneMode) {
-                        if(json[i].done) {
-                            array.push(json[i]);
-                        }
-                    }else if(!json[i].done) {
-                        array.push(json[i]);
-                    }
-                }
-            }
-            displayList(array);
+            setLists(json);
+            changeDisplay();
         }
     });
+
 }
 
-function displayList( arrayList ){
+function setLists(arrayList) {
     $('#sortable').empty();
-    for(var i = 0 ; i < arrayList.length; i++) {
+    for (var i = 0; i < arrayList.length; i++) {
         var mess = "<div class='panel panel-default task'>";
-        mess += " <div class='panel-body' value='"+ arrayList[i].id +"'>";
-        mess += "<input type='checkbox' class='task_done' onclick='clickDoneBtn(this)' ";
-        if (arrayList[i].done){
-            mess+= "checked";
+        mess += " <div class='panel-body' value='" + arrayList[i].id + "'>";
+        mess += "<input type='checkbox' class='task_done' onclick='clickDoneBtn("+ arrayList[i].id +")' ";
+        if (arrayList[i].done) {
+            mess += "checked";
         }
         mess += ">";
         mess += "<a class='task_title'>";
         mess += arrayList[i].title;
         mess += "</a>";
         mess += "<span class='task_star glyphicon glyphicon-star";
-        if(!arrayList[i].star){
+        if (!arrayList[i].star) {
             mess += "-empty";
         }
         mess += "'></span>";
         mess += "<div class='t_time'>";
         mess += "<span class='glyphicon'>&#xe023;</span>";
-        mess += "<span class='task_day'>";
-        mess += arrayList[i].time_limit;
-        mess += "</span>";
- //       mess += "<span class='task_time_limit'>あと";
- //       mess += new Date();
- //       mess += "日</span>";
-        mess += "</div>";
-        mess += "<a class='btn btn_trash pull-right' onclick='clickDeleteBtn(this)'><span class='glyphicon glyphicon-trash'>Trash</span></a>";
-        mess += "<a class='btn btn_star pull-right' onclick='clickStarBtn(this)'><span class='glyphicon glyphicon-star";
-        if(arrayList[i].star){
-            mess += "-empty'>UnStar</span></a>";
-        }else{
+        if (arrayList[i].time_limit != null) {
+
+            mess += "<span class='task_day'>";
+            mess += arrayList[i].time_limit;
+            mess += "</span>";
+
+            var lim = calTime(arrayList[i].time_limit);
+            if (lim == 0) {
+                mess += "<span class='task_time_limit today'>今日</span>";
+            } else if (!arrayList[i].done) {
+                if (lim < 0) {
+                    mess += "<span class='task_time_limit over'>期限が過ぎています！</span>";
+                } else {
+                    mess += "<span class='task_time_limit'>あと" + lim + "日</span>";
+                }
+            }
+            mess += "</div>";
+        }
+        mess += "<a class='btn btn_trash pull-right' onclick='clickDeleteBtn(" + arrayList[i].id + ")'><span class='glyphicon glyphicon-trash'>Trash</span></a>";
+        mess += "<a class='btn btn_star pull-right' onclick='clickStarBtn(" + arrayList[i].id + ")'><span class='glyphicon glyphicon-star";
+        if (arrayList[i].star) {
+            mess += "-empty'>Star</span></a>";
+        } else {
             mess += "'>Star</span></a>";
         }
-        mess += "<a class='btn btn_done pull-right' onclick='clickDoneBtn(this)'><span class='glyphicon glyphicon-";
-        if(arrayList[i].done){
+        mess += "<a class='btn btn_done pull-right' onclick='clickDoneBtn("+ arrayList[i].id +")'><span class='glyphicon glyphicon-";
+        if (arrayList[i].done) {
             mess += "unchecked'>Open</span></a>";
         } else {
             mess += "ok'>Done</span></a>";
@@ -94,55 +93,118 @@ function displayList( arrayList ){
         mess += "</div></div>";
         $('#sortable').append(mess);
     }
-    $( "#sortable" ).sortable();
-    $( "#sortable" ).disableSelection();
+    $("#sortable").sortable();
+    $("#sortable").disableSelection();
+
 }
 
-$(document).on('click','#all',function() {
-    changeMode("all");
-    setList("all");
 
-});
+function calTime(time){
+    var end = new Date(time);
+    var now = new Date();
+    var day = Math.floor((end.getTime() - now.getTime())/(60*60*24*1000))+1;
 
-$(document).on('click','#sort_non',function() {
-    changeMode('nonDone');
-    setList(false);
+    return day;
+}
 
-});
 
-$(document).on('click','#sort_done',function() {
-    changeMode('done');
-    setList(true);
-});
 
-$(document).on('click','#sort_star', function() {
-    changeMode("star");
-    for(var i = 0 ; i < array.length; i++) {
-        if(!array[i].star){
-            array.splice( i, 1 ) ;
+function changeDisplay() {
+    var mode = $('#sort_mode').attr('mode');
+
+    var lists = $('#board').find('.panel-body');
+    if(mode != "sort_deadline") {
+        for (var i = 0; i < lists.length; i++) {
+            var d = $('.task_done', lists[i]);
+            var s = $('.task_star', lists[i]);
+            var t = $('.task_day', lists[i]);
+            var listParent = $(lists[i]).parent(".panel");
+            if(mode == "sort_done") {
+                if(d.is(':checked')){
+                    listParent.show();
+                } else {
+                    listParent.hide();
+                }
+            } else if(mode == 'sort_non'){
+                if(!d.is(':checked')){
+                    listParent.show();
+                } else {
+                    listParent.hide();
+                }
+            }else if (mode == "sort_star") {
+                if($(s).hasClass('glyphicon-star')) {
+                    listParent.show();
+                } else {
+                    listParent.hide();
+                }
+            } else {
+                listParent.show();
+            }
         }
+    }else{
+        //じかんごとに要素を並び替える。
+        //doneは排除。nullは下。締め切り近い順
     }
-    displayList(array);
-});
 
-$(document).on('click','#sort_deadline', function() {
-    changeMode("time");
-    //締め切り順にソートするプログラム実行
-    array.sort(function(a,b){
-        if(a.time_limit < b.time_limit) return -1;
-        if(a.time_limit > b.time_limit) return 1;
-        return 0;
-    });
-    displayList(array);
-});
 
+}
+
+
+
+
+
+/*表示の仕方を変更するためのメソッド*/
 
 function changeMode(mode) {
 
     var before = $('#sort_mode').attr('mode');
     $('#sort_mode').attr('mode', mode);
 
+
+
+
+    $('#' + before).toggleClass('btn-primary');
+    $('#' + before).toggleClass('btn-default');
+    $('#' + mode).toggleClass('btn-primary');
+    $('#' + mode).toggleClass('btn-default');
+
+
+
+    //前のボタンをdefaltに、新しいソートボタンをprimalyにclassチェンジ
+
 }
+
+
+$(document).on('click','#all',function() {
+    changeMode("all");
+    changeDisplay();
+});
+
+$(document).on('click','#sort_non',function() {
+    changeMode('sort_non');
+    changeDisplay();
+
+});
+
+$(document).on('click','#sort_done',function() {
+    changeMode('sort_done');
+    changeDisplay();
+});
+
+$(document).on('click','#sort_star', function() {
+    changeMode("sort_star");
+    changeDisplay();
+});
+
+$(document).on('click','#sort_deadline', function() {
+    changeMode("sort_deadline");
+    changeDisplay();
+});
+
+
+
+/*新しいタスクを作成するためのモーダル用ボタンのイベント*/
+
 
 $(document).on('click','#createBtn',function() {
     $('#createNew').show();
@@ -150,7 +212,13 @@ $(document).on('click','#createBtn',function() {
 $(document).on('click','#cansel',function() {
     $('#createNew').hide();
 });
-//create押下時
+$(document).on('click','.close',function() {
+    $('#createNew').hide();
+});
+
+
+//create押下時（タスクを作成するとき）
+
 $(document).on('click','#create', function() {
 
     $.ajax({
@@ -172,86 +240,106 @@ $(document).on('click','#create', function() {
                 "title": $('#todo').val()
             }),
         success: function (json) {
-            setList(false);
-            displayList(array);
+            display();
             $('#createNew').hide();
         }
     });
 });
 
 
-function clickDoneBtn(obj) {
-    var list= array[searchList($(obj).parent().attr("value"))];
-    $.ajax({
-        type: 'PUT',
-        url: '/api/1/todo/' + list.id,
-        contentType: 'application/json',
-        data: JSON.stringify(
-            {
-                "done": !list.done,
-                "star": list.star,
-                "tag_ids": [
-                    1
-                ],
-                "time_limit": list.time_limit,
-                "title": list.title
-            }),
-        success: function (json) {
-            setList(false);
+
+
+/*それぞれのTaskないのボタンのイベント*/
+
+/*完了・未完了きりかえ*/
+function clickDoneBtn(id) {
+
+    var lists = $('#board').find('.panel-body');
+
+    for (var i = 0; i < lists.length; i++) {
+        if ( $(lists[i]).attr('value') == id ) {
+            console.log('same');
+            var done = $('.task_done', lists[i]);
+            var star = $('.task_star', lists[i]);
+            var time_limit = $('.task_day', lists[i]).text();
+            var title = $('.task_title', lists[i]).text();
+            console.log(title);
+            $.ajax({
+                type: 'PUT',
+                url: '/api/1/todo/' + id,
+                contentType: 'application/json',
+                data: JSON.stringify(
+                    {
+                        "done": !done.is(':checked'),
+                        "star": $(star).hasClass('glyphicon-star'),
+                        "tag_ids": [
+                            1
+                        ],
+                        "time_limit": time_limit,
+                        "title": title
+                    }),
+                success: function (json) {
+                    display();
+                }
+            });
+
+
+            break;
         }
-    });
+    }
+
 }
 
-function clickStarBtn(obj){
-    var list= array[searchList($(obj).parent().attr("value"))];
-    $.ajax({
-        type: 'PUT',
-        url: '/api/1/todo/' + list.id,
-        contentType: 'application/json',
-        data: JSON.stringify(
-            {
-                "done": list.done,
-                "star": !list.star,
-                "tag_ids": [
-                    1
-                ],
-                "time_limit": list.time_limit,
-                "title": list.title
-            }),
-        success: function (json) {
-            setList(false);
+
+
+/*優先度の設定*/
+function clickStarBtn(id) {
+
+    var lists = $('#board').find('.panel-body');
+
+    for (var i = 0; i < lists.length; i++) {
+        if ($(lists[i]).attr('value') == id) {
+            console.log('same');
+            var done = $('.task_done', lists[i]);
+            var star = $('.task_star', lists[i]);
+            var time_limit = $('.task_day', lists[i]).text();
+            var title = $('.task_title', lists[i]).text();
+            console.log(title);
+            $.ajax({
+                type: 'PUT',
+                url: '/api/1/todo/' + id,
+                contentType: 'application/json',
+                data: JSON.stringify(
+                    {
+                        "done": done.is(':checked'),
+                        "star": !$(star).hasClass('glyphicon-star'),
+                        "tag_ids": [
+                            1
+                        ],
+                        "time_limit": time_limit,
+                        "title": title
+                    }),
+                success: function (json) {
+                    display();
+                }
+            });
+
+
+            break;
         }
-    });
+    }
 }
 
-function clickDeleteBtn(obj){
-    var list= array[searchList($(obj).parent().attr("value"))];
+
+/*削除ボタン*/
+function clickDeleteBtn(id){
     $.ajax({
         type: 'DELETE',
-        url: '/api/1/todo/' + list.id,
+        url: '/api/1/todo/' +  id,
         success: function (json) {
-            setList(false);
+            display();
         }
     });
 }
 
-//どのTODOなのかを特定するための関数を作成する必要があり、引数はValue（Id)
-function searchList(value) {
-    var result =null;
-    for(var i = 0; i < array.length; i++){
-        //value とidが一緒かどうかを判断
-        if( value == array[i].id )
-            return i;//一緒なら配列の値を返す
-    }
-    alert('画面を読み込みなおしてください。');
-    //もしないような値があったら-1とかするべきかな？　errorはく的なしょりも必要
-    return -1;
-}
-
-
-function calTime(time){
-    //
-    var nowTime;
-
-}
 
