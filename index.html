@@ -13,141 +13,134 @@
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript" src="static/index.js"></script>
-<h1>TO DO LIST</h1>
 
 
-<div id="todo_board">
-
-	<div id="sort_mode" class="btn-group btn-group-justified" mode="sort_non">
-		<a href="#" class="btn btn-primary" id="sort_non">未完了</a>
-		<a href="#" class="btn btn-default" id="sort_done">完了</a>
-		<a href="#" class="btn btn-default" id="sort_star">重要</a>
-		<a href="#" class="btn btn-default" id="sort_deadline">締め切り順</a>
-		<a href="#" class="btn btn-default" id="all">すべて</a>
+<div class="jumbotron title">
+	<h1>TO DO LIST</h1>
+	<div id="remaind" class="mess">
+		<!--  ここにリマインドをUPしたい -->
 	</div>
-
-	<div class="panel panel-info">
-		<div class="panel-body well">
-			<p><a class="btn btn-default pull-right" id="createBtn">+ New To Do</a></p>
-
-			<div id="board">
-
-				<div id="sortable">
-
-					<!--  ここにTO DO LISTをはりつけてく -->
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-
-
-
-
-
-	<div class="modal" id="createNew">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title">New Task</h4>
-				</div>
-				<div class="modal-body">
-					<form class="form-horizontal">
-						<fieldset>
-							<legend></legend>
-							<div class="form-group">
-								<label for="todo" class="col-lg-2 control-label">Title</label>
-								<div class="col-lg-8">
-									<input class="form-control input-lg" id="todo" type="text" value="title">
-
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="todo" class="col-lg-2 control-label" for="deadline">締め切り日</label>
-								<div class="col-lg-4">
-									<input class="form-control input-sm" id="deadline" type="text">
-									<div class="checkbox">
-										<label>
-											<input type="checkbox" id="star"> 重要
-										</label>
-									</div>
-									<div class="checkbox">
-										<label>
-											<input type="checkbox" id="done"> 完了
-										</label>
-									</div>
-								</div>
-							</div>
-
-						</fieldset>
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal" id="cansel">Cancel</button>
-					<button type="button" class="btn btn-primary" id="create">Create</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="modal" id="showDetail">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title" id="show_id" value="">#Number</h4>
-				</div>
-				<div class="modal-body">
-					<form class="form-horizontal">
-						<fieldset>
-							<legend></legend>
-							<div class="form-group">
-								<label for="todo" class="col-lg-2 control-label">Title</label>
-								<div class="col-lg-8">
-									<input class="form-control input-lg" id="show_todo" type="text" value="" disabled='disabled'>
-
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="todo" class="col-lg-2 control-label" for="deadline">締め切り日</label>
-								<div class="col-lg-4">
-									<input class="form-control input-sm" id="show_deadline" type="text" disabled='disabled'>
-									<div class="checkbox">
-										<label>
-											<input type="checkbox" id="show_star" disabled='disabled'> 重要
-										</label>
-									</div>
-									<div class="checkbox">
-										<label>
-											<input type="checkbox" id="show_done" disabled='disabled'> 完了
-										</label>
-									</div>
-								</div>
-							</div>
-
-						</fieldset>
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal" id="close">Cancel</button>
-					<button type="button" class="btn btn-primary" id="edit">Edit</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-
 </div>
+<div class="jumbotron">
+	<div id="todo_board">
+
+		<div id="sort_mode" class="btn-group btn-group-justified" mode="sort_non">
+			<a href="#" class="btn btn-primary" id="sort_non">未完了</a>
+			<a href="#" class="btn btn-default" id="sort_star">優先</a>
+			<a href="#" class="btn btn-default" id="sort_deadline">時間</a>
+			<a href="#" class="btn btn-default" id="sort_done">完了</a>
+			<a href="#" class="btn btn-default" id="all">すべて</a>
+		</div>
+
+		<div class="panel panel-info">
+			<div class="panel-body well">
+				<p><a class="btn btn-default pull-right" id="createBtn">+ New To Do</a></p>
+
+				<div id="board">
+
+					<div id="sortable">
+
+						<!--  ここにTO DO LISTをはりつけてく -->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal" id="createNew">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">New To Do</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal">
+							<fieldset>
+								<legend></legend>
+								<div class="form-group">
+									<label for="todo" class="col-lg-2 control-label">Title</label>
+									<div class="col-lg-8">
+										<input class="form-control input-lg" id="todo" type="text" value="">
+
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="todo" class="col-lg-2 control-label" for="deadline">締め切り日</label>
+									<div class="col-lg-4">
+										<input class="form-control input-sm" id="deadline" type="text">
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" id="star"> 優先
+											</label>
+										</div>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" id="done"> 完了
+											</label>
+										</div>
+									</div>
+								</div>
+
+							</fieldset>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal" id="cansel">Cancel</button>
+						<button type="button" class="btn btn-primary" id="create">Create</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal" id="showDetail">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="show_id" value="">#Number</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal">
+							<fieldset>
+								<legend></legend>
+								<div class="form-group">
+									<label for="todo" class="col-lg-2 control-label">Title</label>
+									<div class="col-lg-8">
+										<input class="form-control input-lg" id="show_todo" type="text" value="" disabled='disabled'>
+
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="todo" class="col-lg-2 control-label" for="deadline">締め切り日</label>
+									<div class="col-lg-4">
+										<input class="form-control input-sm" id="show_deadline" type="text" disabled='disabled'>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" id="show_star" disabled='disabled'> 優先
+											</label>
+										</div>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" id="show_done" disabled='disabled'> 完了
+											</label>
+										</div>
+									</div>
+								</div>
+
+							</fieldset>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal" id="close">Cancel</button>
+						<button type="button" class="btn btn-primary" id="edit">Edit</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 
-
-
-
-
-
-
+	</div>
+</div>
 
 
 </body>

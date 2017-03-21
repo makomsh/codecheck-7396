@@ -1,27 +1,104 @@
 
 
-#todo_board {
-    margin-top:5%;
+.jumbotron {
+    margin: 2%;
+    background-color:#FFF;
 }
 
-#board {
-    margin-top:5%;
-}
 
-.task_bar p{
+
+.todo_bar p{
     display: inline-block;  /* インラインブロック化 */
     vertical-align: middle; /* 中央を揃える */
 }
 
-a.task_title {
+
+
+a.todo_title {
     font-size: 200%;
     color: #000;
 }
 
-.task_time {
+.todo_time {
     color: #0d87e9;
     font-size: 90%;
 }
-.bookmark{
-    margin: auto;
+
+span.todo_time_limit.today{
+    color:#2196f3;
 }
+span.todo_time_limit.over{
+    color:#e51c23;
+}
+
+#sort_mode .btn.btn-primary {
+    background-color:#1976d2;
+    color:#FFF;
+}
+
+
+#sort_mode .btn.btn-default {
+    background-color:#64b5f6;
+    color:#FFF;
+}
+
+#createBtn {
+    background-color:#e3f2fd;
+    color:#01579b;
+}
+
+
+.glyphicon.glyphicon-ok {
+    color:#e51c23;
+}
+
+.glyphicon.glyphicon-unchecked{
+    color:#00c853;
+}
+
+.glyphicon.glyphicon-star, .glyphicon.glyphicon-star-empty{
+    color:#2196f3;
+}
+
+.glyphicon.glyphicon-trash{
+    color:#333;
+
+}
+
+
+@media screen and (min-width:480px) {
+    /*　画面サイズが480pxからはここを読み込む　*/
+
+    #board {
+        margin-top:10%;
+    }
+}
+@media screen and (min-width:768px) and ( max-width:1024px) {
+    /*　画面サイズが768pxから1024pxまではここを読み込む　*/
+
+
+    #board {
+        margin-top:5%;
+    }
+}
+
+
+@media screen and (min-width:1024px) and ( max-width:1366px) {
+    /*　画面サイズが768pxから1024pxまではここを読み込む　*/
+
+
+    #board {
+        margin-top:5%;
+    }
+}
+
+@media screen and (min-width:1366px) {
+
+
+    #board {
+        margin-top:3%;
+    }
+
+
+}
+
