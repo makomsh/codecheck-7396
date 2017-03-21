@@ -10,8 +10,8 @@ var Page = function(){
         $('#createNew').hide();
         changeMode("sort_non");
         display();
-
-
+        $( "#sortable" ).sortable();
+        $( "#sortable" ).disableSelection();
         $( "#deadline" ).datepicker();
         $( "#deadline" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
         $( "#show_deadline" ).datepicker();
@@ -22,11 +22,9 @@ var Page = function(){
 };
 
 var p = new Page();
-var array =[];
+
 $(function(){
     p.init();
-    $( "#sortable" ).sortable();
-    $( "#sortable" ).disableSelection();
 });
 
 /*
@@ -43,6 +41,7 @@ function display() {
             $('#sort_mode').removeClass('sorted');
             setLists(json);
             changeDisplay();
+            remaindTime();
         }
     });
 }
@@ -531,7 +530,71 @@ $(document).on('click','#edit', function() {
 
 
 
-/**/
+/*
+* 通知を表示するためのメソッド
+*
+*
+* 引数：なし
+* 返り値：なし
+* */
+
+function remaindTime(){
+    $('#remaind').empty();
+    var mess = "";
+    var count_over = 0;
+    var count_today = 0;
+    var count_few = 0;
+    var lists = $('#board').find('.panel-body');
+    for (var i = 0; i < lists.length; i++) {
+        var done = $('.todo_done', lists[i]);
+        if (!done.is(':checked')) {
+            var time = $('.todo_time_limit', lists[i]);
+            if ($(time).hasClass('over')) {
+                count_over++;
+            } else if ($(time).hasClass('today')) {
+                count_today++;
+            } else if ($(time).text() != null) {
+                var days = parseInt($(time).text().replace('あと', '').replace('日', ''), 10);
+                if(days <= 5){
+                    count_few++;
+                }
+            }
+        }
+    }
+    if(count_over > 0){
+        mess += "<a>期限が過ぎているTodoが"+count_over+"件あります。</a><br>";
+    }
+    if(count_today > 0){
+        mess += "<a>本日締め切りのTodoが"+count_today+"件あります。</a><br>";
+    }
+    if(count_few > 0){
+        mess += "<a>近日締め切りのTodoが"+count_few+"件あります。</a>";
+    }
+    if(count_over == 0 && count_today == 0 && count_few == 0){
+        mess += "<a>今日も頑張っていきましょう！</a>";
+    }
+
+    if(count_over > 0){
+        $('#remaind_panel').addClass("over");
+        if($('#remaind_panel').hasClass('today')){
+            $('#remaind_panel').removeClass('today');
+        }
+    }else if(count_today > 0){
+        $('#remaind_panel').addClass("today");
+        if($('#remaind_panel').hasClass('over')) {
+            $('#remaind_panel').removeClass('over');
+        }
+    }else{
+        if($('#remaind_panel').hasClass('over')) {
+            $('#remaind_panel').removeClass('over');
+        }
+        if($('#remaind_panel').hasClass('today')){
+            $('#remaind_panel').removeClass('today');
+        }
 
 
+    }
+
+    $('#remaind').append(mess);
+}
 

@@ -5,6 +5,21 @@
     background-color:#FFF;
 }
 
+#remaind_panel {
+    padding: 2%;
+    width:50%;
+    background-color: #eceff1;
+}
+#remaind_panel.over{
+    background-color: #ffebee;
+}
+#remaind_panel.today{
+    background-color: #fff8e1;
+}
+#remaind_panel a{
+    color:#000;
+}
+
 
 
 .todo_bar p{
@@ -66,17 +81,14 @@ span.todo_time_limit.over{
 }
 
 
-@media screen and (min-width:480px) {
+@media screen and (min-width:480px) and (min-width:768px){
     /*　画面サイズが480pxからはここを読み込む　*/
-
     #board {
         margin-top:10%;
     }
 }
 @media screen and (min-width:768px) and ( max-width:1024px) {
     /*　画面サイズが768pxから1024pxまではここを読み込む　*/
-
-
     #board {
         margin-top:5%;
     }
@@ -86,14 +98,12 @@ span.todo_time_limit.over{
 @media screen and (min-width:1024px) and ( max-width:1366px) {
     /*　画面サイズが768pxから1024pxまではここを読み込む　*/
 
-
     #board {
         margin-top:5%;
     }
 }
 
 @media screen and (min-width:1366px) {
-
 
     #board {
         margin-top:3%;
