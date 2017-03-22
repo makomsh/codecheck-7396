@@ -5,23 +5,173 @@
 var Page = function(){
     //初期化
     this.init = function(){
-        $('#createNew').hide();
-        changeMode("sort_non");
-        display();
-        $( "#sortable" ).sortable();
-        $( "#sortable" ).disableSelection();
-        $( "#deadline" ).datepicker();
-        $( "#deadline" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
-        $( "#show_deadline" ).datepicker();
-        $( "#show_deadline" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
-
+        /*新しいTODO作成用ボタンイベント*/
+        $("#createBtn").click( $.proxy(this.createNewOpen,this) );
+        $("#cansel").click( $.proxy(this.createNewClose,this) );
+        $(".close").click( $.proxy(this.createNewClose,this) );
+        /*詳細・編集用ボタンイベント*/
+        $("#create").click( $.proxy(this.createTodo,this) );
+        $('#edit').click( $.proxy(this.editTodo,this) );
+        $("#close").click( $.proxy(this.DetailClose,this) );
+        $(".close").click( $.proxy(this.DetailClose,this) );
+        /*表示変更用ボタンイベント*/
+        $("#all").click( $.proxy(this.changeMode,this,'all') );
+        $("#sort_non").click( $.proxy(this.changeMode,this,'sort_non') );
+        $("#sort_done").click( $.proxy(this.changeMode,this,'sort_done') );
+        $("#sort_star").click( $.proxy(this.changeMode,this,'sort_star') );
+        $("#sort_deadline").click( $.proxy(this.changeMode,this,'sort_deadline') );
     };
+    /*新しいタスクを作成するためのモーダル表示のメソッド */
+    this.createNewOpen = function (){
+        $('#createNew').show();
+    }
+
+    /*新しいTodoを作成するモーダルを閉じるためのメソッド*/
+    this.createNewClose = function (){
+        $('#createNew').hide();
+    }
+
+    /*
+     * モーダルを非表示用メソッド
+     * 編集されている場合があるので、一応再表示
+     * モーダルを非表示に
+     * ＋
+     * 編集のモードの状態でモーダルを閉じる場合があるので
+     * 状態を把握して、次開いたときに詳細表示モードになるように設定
+     *
+     * 引数：なし
+     * 返り値なし
+     * */
+    this.DetailClose = function (){
+        $('#edit').text('Edit');
+        if($('#edit').hasClass('btn-danger')){
+            $('#edit').toggleClass('btn-primary');
+            $('#edit').toggleClass('btn-danger');
+        }
+        $('#show_todo').prop('disabled', true);
+        $('#show_deadline').prop('disabled', true);
+        $('#show_done').prop('disabled', true);
+        $('#show_star').prop('disabled', true);
+        $('#showDetail').hide();
+    }
+
+    /*
+     *表示の仕方を変更するためのメソッド
+     * 前のモードをまず求めておく
+     * モードを新しいものに設定
+     * 前の並び方のボタンをdefaultに
+     * 切り替える並び方のボタンをprimaryに
+     * 設定が完了したら、再表示
+     * 引数：並び替えるモード
+     * 返り値：なし
+     * */
+    this.changeMode = function(mode) {
+        var before = $('#sort_mode').attr('mode');
+        $('#sort_mode').attr('mode', mode);
+        $('#' + before).toggleClass('btn-primary');
+        $('#' + before).toggleClass('btn-default');
+        $('#' + mode).toggleClass('btn-primary');
+        $('#' + mode).toggleClass('btn-default');
+
+        if(mode == "all" || before == "sort_deadline"){
+            display();
+        }else if(mode == "sort_deadline"){
+            $('#sort_mode').removeClass('sorted');
+        }
+        changeDisplay();
+    }
+
+
+    /*
+     * 新しいTODOを追加するためのメソッド
+     * それぞれの情報をデータベースに格納
+     * ＊カテゴリは０、Stringに設定
+     * 表示したあとはモーダル非表示
+     * */
+    this.createTodo = function(mode) {
+        $.ajax({
+            type: 'POST',
+            url: '../api/1/todo/',
+            contentType: 'application/json',
+            data: JSON.stringify(
+                {
+                    "done": $('#done').is(':checked'),
+                    "id": 0,
+                    "star": $('#star').is(':checked'),
+                    "tags": [
+                        {
+                            "id": 0,
+                            "name": "string"
+                        }
+                    ],
+                    "time_limit": $('#deadline').val(),
+                    "title": $('#todo').val()
+                }),
+            success: function (json) {
+                display();
+                $('#createNew').hide();
+            }
+        });
+    }
+
+    /*
+     * タスクを編集するためのメソッド
+     * */
+    this.editTodo = function() {
+        if( $('#edit').text() == "Edit" ){
+            $('#show_todo').prop('disabled', false);
+            $('#show_deadline').prop('disabled', false);
+            $('#show_done').prop('disabled', false);
+            $('#show_star').prop('disabled', false);
+            $('#edit').text('Save');
+            $('#edit').toggleClass('btn-primary');
+            $('#edit').toggleClass('btn-danger');
+        }else{
+            var id = $('#show_id').text();
+            $.ajax({
+                type: 'PUT',
+                url: '/api/1/todo/' + id.replace('#',''),
+                contentType: 'application/json',
+                data: JSON.stringify(
+                    {
+                        "done": $('#show_done').prop("checked"),
+                        "star": $('#show_star').prop("checked"),
+                        "tag_ids": [
+                            1
+                        ],
+                        "time_limit": $('#show_deadline').val(),
+                        "title": $('#show_todo').val()
+                    }),
+                success: function (json) {
+                    $('#edit').text('Edit');
+                    $('#edit').toggleClass('btn-primary');
+                    $('#edit').toggleClass('btn-danger');
+                    $('#show_todo').prop('disabled', true);
+                    $('#show_deadline').prop('disabled', true);
+                    $('#show_done').prop('disabled', true);
+                    $('#show_star').prop('disabled', true);
+                    display();
+                    $("#close").click();
+                }
+            });
+        }
+    }
+
 };
 
 var p = new Page();
 
 $(function(){
     p.init();
+    $('#createNew').hide();
+    $("#sort_non").click();
+    display();
+    $( "#sortable" ).sortable();
+    $( "#sortable" ).disableSelection();
+    $( "#deadline" ).datepicker();
+    $( "#deadline" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+    $( "#show_deadline" ).datepicker();
+    $( "#show_deadline" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
 });
 
 /*
@@ -86,14 +236,14 @@ function setLists(arrayList) {
             }
             mess += "</div>";
         }
-        mess += "<a class='btn btn_trash pull-right' onclick='clickDeleteBtn(" + arrayList[i].id + ")'><span class='glyphicon glyphicon-trash'>Trash</span></a>";
-        mess += "<a class='btn btn_star pull-right' onclick='clickStarBtn(" + arrayList[i].id + ")'><span class='glyphicon glyphicon-star";
+        mess += "<a class='btn btn_trash pull-right trash' onclick='clickDeleteBtn(" + arrayList[i].id + ")'><span class='glyphicon glyphicon-trash'>Trash</span></a>";
+        mess += "<a class='btn btn_star pull-right star' onclick='clickStarBtn(" + arrayList[i].id + ")'><span class='glyphicon glyphicon-star";
         if (arrayList[i].star) {
             mess += "-empty'>Star</span></a>";
         } else {
             mess += "'>Star</span></a>";
         }
-        mess += "<a class='btn btn_done pull-right' onclick='clickDoneBtn("+ arrayList[i].id +")'><span class='glyphicon glyphicon-";
+        mess += "<a class='btn btn_done pull-right done' onclick='clickDoneBtn("+ arrayList[i].id +")'><span class='glyphicon glyphicon-";
         if (arrayList[i].done) {
             mess += "unchecked'>Open</span></a>";
         } else {
@@ -187,112 +337,6 @@ function changeDisplay() {
     }
 }
 
-
-/*
- *表示の仕方を変更するためのメソッド
- * 前のモードをまず求めておく
- * モードを新しいものに設定
- * 前の並び方のボタンをdefaultに
- * 切り替える並び方のボタンをprimaryに
- * 引数：並び替えるモード
- * 返り値：なし
- * */
-function changeMode(mode) {
-
-    var before = $('#sort_mode').attr('mode');
-    $('#sort_mode').attr('mode', mode);
-    $('#' + before).toggleClass('btn-primary');
-    $('#' + before).toggleClass('btn-default');
-    $('#' + mode).toggleClass('btn-primary');
-    $('#' + mode).toggleClass('btn-default');
-
-    if(mode == "all" || before == "sort_deadline"){
-        display();
-    }
-}
-
-/*
- * 並び替えボタンが押された時のイベント
- * １．モードの変更
- * ２．再表示
- * 引数：並び替える方法（モード）
- * 返り値：なし
- * */
-$(document).on('click','#all',function() {
-    changeMode("all");
-    changeDisplay();
-});
-
-$(document).on('click','#sort_non',function() {
-    changeMode('sort_non');
-    changeDisplay();
-});
-
-$(document).on('click','#sort_done',function() {
-    changeMode('sort_done');
-    changeDisplay();
-});
-
-$(document).on('click','#sort_star', function() {
-    changeMode("sort_star");
-    changeDisplay();
-});
-
-$(document).on('click','#sort_deadline', function() {
-    $('#sort_mode').removeClass('sorted');
-    changeMode("sort_deadline");
-    changeDisplay();
-});
-
-
-/*
- *新しいタスクを作成するためのモーダル用ボタンのイベント
- * ＋New TO DO　が押された時はモーダルを表示
- * X　Canselが押された時はモーダルを非表示
- * */
-$(document).on('click','#createBtn',function() {
-    $('#createNew').show();
-});
-
-$(document).on('click','#cansel',function() {
-    $('#createNew').hide();
-});
-
-$(document).on('click','.close',function() {
-    $('#createNew').hide();
-});
-
-/*
- * 新しいTODOを追加するためのメソッド
- * それぞれの情報をデータベースに格納
- * ＊カテゴリは０、Stringに設定
- * 表示したあとはモーダル非表示
- * */
-$(document).on('click','#create', function() {
-    $.ajax({
-        type: 'POST',
-        url: '../api/1/todo/',
-        contentType: 'application/json',
-        data: JSON.stringify(
-            {
-                "done": $('#done').is(':checked'),
-                "id": 0,
-                "star": $('#star').is(':checked'),
-                "tags": [
-                    {
-                        "id": 0,
-                        "name": "string"
-                    }
-                ],
-                "time_limit": $('#deadline').val(),
-                "title": $('#todo').val()
-            }),
-        success: function (json) {
-            display();
-            $('#createNew').hide();
-        }
-    });
-});
 
 /*それぞれのTodoないのボタンのイベント*/
 /*完了・未完了きりかえ*/
@@ -403,46 +447,6 @@ function clickDeleteBtn(id){
 }
 
 /*
- *詳細表示＋編集のモーダル用ボタンのイベント
- * タイトルが押された時はモーダルを表示
- * X　Canselが押された時はモーダルを非表示
- * */
-
-$(document).on('click','#close',function() {
-    closeDetail();
-
-});
-
-$(document).on('click','.close',function() {
-    closeDetail();
-});
-
-/*
-* モーダルを非表示用メソッド
-* 編集されている場合があるので、一応再表示
-* モーダルを非表示に
-* ＋
-* 編集のモードの状態でモーダルを閉じる場合があるので
-* 状態を把握して、次開いたときに詳細表示モードになるように設定
-*
-* 引数：なし
-* 返り値なし
-* */
-function closeDetail(){
-    $('#edit').text('Edit');
-    if($('#edit').hasClass('btn-danger')){
-        $('#edit').toggleClass('btn-primary');
-        $('#edit').toggleClass('btn-danger');
-    }
-    $('#show_todo').prop('disabled', true);
-    $('#show_deadline').prop('disabled', true);
-    $('#show_done').prop('disabled', true);
-    $('#show_star').prop('disabled', true);
-    $('#showDetail').hide();
-
-}
-
-/*
  * モーダルにTODOの詳細を設定し、表示するメソッド
  * それぞれの要素にテキストを代入していく
  * 引数；TODOLISTのid
@@ -479,60 +483,17 @@ function showDetailTodo(id) {
     $('#showDetail').show();
 }
 
+
 /*
- * タスクを編集するためのメソッド
+ * 通知を表示するためのメソッド
+ *  期限が過ぎているTodoがあればその旨を通知　＋　並び替え
+ *  本日締め切りのTodoがあればその旨を通知　＋　並び替え
+ *  近日（5日以内）に締め切りのものがあれば通知
+ *  上記の通知はある分だけ通知。
+ *  何もなければコメント「今日も一日頑張りましょう！」
+ * 引数：なし
+ * 返り値：なし
  * */
-$(document).on('click','#edit', function() {
-    if( $('#edit').text() == "Edit" ){
-        $('#show_todo').prop('disabled', false);
-        $('#show_deadline').prop('disabled', false);
-        $('#show_done').prop('disabled', false);
-        $('#show_star').prop('disabled', false);
-        $('#edit').text('Save');
-        $('#edit').toggleClass('btn-primary');
-        $('#edit').toggleClass('btn-danger');
-    }else{
-        var id = $('#show_id').text();
-        $.ajax({
-            type: 'PUT',
-            url: '/api/1/todo/' + id.replace('#',''),
-            contentType: 'application/json',
-            data: JSON.stringify(
-                {
-                    "done": $('#show_done').prop("checked"),
-                    "star": $('#show_star').prop("checked"),
-                    "tag_ids": [
-                        1
-                    ],
-                    "time_limit": $('#show_deadline').val(),
-                    "title": $('#show_todo').val()
-                }),
-            success: function (json) {
-                $('#edit').text('Edit');
-                $('#edit').toggleClass('btn-primary');
-                $('#edit').toggleClass('btn-danger');
-                $('#show_todo').prop('disabled', true);
-                $('#show_deadline').prop('disabled', true);
-                $('#show_done').prop('disabled', true);
-                $('#show_star').prop('disabled', true);
-                display();
-                closeDetail();
-            }
-        });
-    }
-});
-
-/*
-* 通知を表示するためのメソッド
-*  期限が過ぎているTodoがあればその旨を通知　＋　並び替え
-*  本日締め切りのTodoがあればその旨を通知　＋　並び替え
-*  近日（5日以内）に締め切りのものがあれば通知
-*  上記の通知はある分だけ通知。
-*  何もなければコメント「今日も一日頑張りましょう！」
-* 引数：なし
-* 返り値：なし
-* */
-
 function remaindTime(){
     $('#remaind').empty();
     var mess = "";
@@ -591,7 +552,6 @@ function remaindTime(){
         if($('#remaind_panel').hasClass('today')){
             $('#remaind_panel').removeClass('today');
         }
-
     }
 
     $('#remaind').append(mess);
