@@ -2,9 +2,7 @@
  * Created by miyashita_ak on 17/01/20.
  */
 
-
 var Page = function(){
-
     //初期化
     this.init = function(){
         $('#createNew').hide();
@@ -18,7 +16,6 @@ var Page = function(){
         $( "#show_deadline" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
 
     };
-
 };
 
 var p = new Page();
@@ -254,19 +251,6 @@ $(document).on('click','#sort_deadline', function() {
  * X　Canselが押された時はモーダルを非表示
  * */
 $(document).on('click','#createBtn',function() {
-
-
-    var w = $(window).width();
-    var h = $(window).height();
-
-    var cw = $("#createNew").outerWidth();
-    var ch = $("#createNew").outerHeight();
-
-    //取得した値をcssに追加する
-    $("#createNew").css({
-        "left": ((w - cw)/2) + "px",
-        "top": ((h - ch)/2) + "px"
-    });
     $('#createNew').show();
 });
 
@@ -433,6 +417,17 @@ $(document).on('click','.close',function() {
     closeDetail();
 });
 
+/*
+* モーダルを非表示用メソッド
+* 編集されている場合があるので、一応再表示
+* モーダルを非表示に
+* ＋
+* 編集のモードの状態でモーダルを閉じる場合があるので
+* 状態を把握して、次開いたときに詳細表示モードになるように設定
+*
+* 引数：なし
+* 返り値なし
+* */
 function closeDetail(){
     $('#edit').text('Edit');
     if($('#edit').hasClass('btn-danger')){
@@ -443,7 +438,6 @@ function closeDetail(){
     $('#show_deadline').prop('disabled', true);
     $('#show_done').prop('disabled', true);
     $('#show_star').prop('disabled', true);
-    display();
     $('#showDetail').hide();
 
 }
@@ -485,7 +479,6 @@ function showDetailTodo(id) {
     $('#showDetail').show();
 }
 
-
 /*
  * タスクを編集するためのメソッド
  * */
@@ -523,17 +516,19 @@ $(document).on('click','#edit', function() {
                 $('#show_done').prop('disabled', true);
                 $('#show_star').prop('disabled', true);
                 display();
+                closeDetail();
             }
         });
     }
 });
 
-
-
 /*
 * 通知を表示するためのメソッド
-*
-*
+*  期限が過ぎているTodoがあればその旨を通知　＋　並び替え
+*  本日締め切りのTodoがあればその旨を通知　＋　並び替え
+*  近日（5日以内）に締め切りのものがあれば通知
+*  上記の通知はある分だけ通知。
+*  何もなければコメント「今日も一日頑張りましょう！」
 * 引数：なし
 * 返り値：なし
 * */
@@ -541,18 +536,21 @@ $(document).on('click','#edit', function() {
 function remaindTime(){
     $('#remaind').empty();
     var mess = "";
+    var array = [];
     var count_over = 0;
     var count_today = 0;
     var count_few = 0;
-    var lists = $('#board').find('.panel-body');
+    var lists = $('#board').find('.todo');
     for (var i = 0; i < lists.length; i++) {
         var done = $('.todo_done', lists[i]);
         if (!done.is(':checked')) {
             var time = $('.todo_time_limit', lists[i]);
             if ($(time).hasClass('over')) {
                 count_over++;
+                array.push(lists[i]);
             } else if ($(time).hasClass('today')) {
                 count_today++;
+                array.push(lists[i]);
             } else if ($(time).text() != null) {
                 var days = parseInt($(time).text().replace('あと', '').replace('日', ''), 10);
                 if(days <= 5){
@@ -561,6 +559,8 @@ function remaindTime(){
             }
         }
     }
+
+    /*メッセージ通知*/
     if(count_over > 0){
         mess += "<a>期限が過ぎているTodoが"+count_over+"件あります。</a><br>";
     }
@@ -592,9 +592,19 @@ function remaindTime(){
             $('#remaind_panel').removeClass('today');
         }
 
-
     }
 
     $('#remaind').append(mess);
-}
 
+    /*並び替え*/
+    array.sort(function(a,b){
+        if($(a).find('.todo_day').text() > $(b).find('.todo_day').text()) return -1;
+        if($(a).find('.todo_day').text() < $(b).find('.todo_day').text()) return 1;
+        return 1;
+    });
+
+    for(var i = 0; i < array.length; i++){
+        $(array[i]).prependTo('#sortable');
+    }
+
+}
